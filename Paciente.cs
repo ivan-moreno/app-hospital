@@ -8,10 +8,7 @@ internal class Paciente : Persona
         string nombre,
         string dni,
         int edad)
-        : base(nombre, dni, edad)
-    {
-
-    }
+        : base(nombre, dni, edad) { }
 
     public override string ToString()
     {

@@ -20,9 +20,12 @@ internal sealed class Program
         AbrirMenuHospital();
     }
 
+    /// <summary>
+    /// Informa al usuario de qué puede realizar y qué tecla debe pulsar para realizarlo.
+    /// </summary>
     private static void AbrirMenuHospital()
     {
-
+        EscribirLinea($"¡Bienvenido al hospital '{hospital.Nombre}'!", color: ConsoleColor.Yellow);
 
         while (enEjecucion)
         {
@@ -32,7 +35,7 @@ internal sealed class Program
                 "\n4. Lista de pacientes de un médico" +
                 "\n5. Lista de personas en el hospital" +
                 "\n6. Eliminar paciente" +
-                "\n7. Cerrar aplicación", true, ConsoleColor.Cyan);
+                "\n7. Cerrar aplicación", color: ConsoleColor.Cyan);
 
             char letra = PedirCaracter("Introduce un número: ", '1', '2', '3', '4', '5', '6', '7');
             Console.WriteLine();
@@ -82,7 +85,10 @@ internal sealed class Program
 
         hospital.AnadirMedico(medico);
 
-        EscribirLinea(string.Format(mensajeMedicoRegistrado, medico.Nombre), true, ConsoleColor.Green);
+        EscribirLinea(
+            mensaje: string.Format(mensajeMedicoRegistrado, medico.Nombre),
+            esperarTecla: true,
+            color: ConsoleColor.Green);
     }
 
     private static void AnadirPaciente()
@@ -97,12 +103,18 @@ internal sealed class Program
             dni: PedirTexto(9, 9, "DNI: "),
             edad: PedirNumero(18, 120, "Edad: "));
 
-        EscribirLinea(string.Format(mensajePacienteRegistrado, paciente.Nombre), true, ConsoleColor.Yellow);
+        EscribirLinea(
+            mensaje: string.Format(mensajePacienteRegistrado, paciente.Nombre),
+            esperarTecla: true,
+            color: ConsoleColor.Yellow);
 
         int indiceMedico = PedirIndiceMedico();
         hospital.AsignarPaciente(paciente, indiceMedico);
 
-        EscribirLinea(string.Format(mensajePacienteAsignado, paciente.Nombre), true, ConsoleColor.Green);
+        EscribirLinea(
+            mensaje: string.Format(mensajePacienteAsignado, paciente.Nombre),
+            esperarTecla: true,
+            color: ConsoleColor.Green);
     }
 
     private static void ListarMedicos()
@@ -110,7 +122,7 @@ internal sealed class Program
         if (!HayMedicos())
             return;
 
-        EscribirLinea(hospital.ListarMedicos());
+        EscribirLinea(hospital.ListarMedicos(), esperarTecla: true);
     }
 
     private static void ListarPacientesDeMedico()
@@ -120,12 +132,12 @@ internal sealed class Program
 
         int indiceMedico = PedirIndiceMedico();
         Medico medico = hospital.MedicoPorIndice(indiceMedico);
-        Console.WriteLine(medico);
+        EscribirLinea(medico.ToString(), esperarTecla: true);
     }
 
     private static void ListarPersonas()
     {
-        Console.WriteLine(hospital);
+        EscribirLinea(hospital.ToString(), esperarTecla: true);
     }
 
     private static void EliminarPaciente()
@@ -143,16 +155,34 @@ internal sealed class Program
         enEjecucion = false;
     }
 
+    /// <summary>
+    /// Muestra una lista de los médicos y pide al usuario que elija uno de ellos.
+    /// </summary>
+    /// <returns>
+    /// El índice del médico en la lista del hospital. (<see cref="Hospital.medicos"/>)
+    /// </returns>
     private static int PedirIndiceMedico()
     {
         return PedirIndice(hospital.ListarMedicos(), hospital.NumeroDeMedicos);
     }
 
+    /// <summary>
+    /// Muestra una lista de los pacientes y pide al usuario que elija uno de ellos.
+    /// </summary>
+    /// <returns>
+    /// El índice del paciente en la lista del hospital. (<see cref="Hospital.pacientes"/>)
+    /// </returns>
     private static int PedirIndicePaciente()
     {
         return PedirIndice(hospital.ListarPacientes(), hospital.NumeroDePacientes);
     }
 
+    /// <summary>
+    /// Muestra una <paramref name="lista"/> de opciones y devuelve
+    /// el índice que el usuario haya presionado.
+    /// </summary>
+    /// <param name="lista">El texto que representa la lista de opciones.</param>
+    /// <param name="numeroMax">El número de elementos en la lista.</param>
     private static int PedirIndice(string lista, int numeroMax)
     {
         EscribirLinea(lista);
@@ -196,13 +226,19 @@ internal sealed class Program
         return true;
     }
 
+    /// <summary>
+    /// Informa al usuario de qué teclas puede presionar y la devuelve si válida.
+    /// </summary>
+    /// <param name="mensaje">El mensaje a mostrar, usado para informar al usuario sobre qué debe introducir.</param>
+    /// <param name="caracteresValidos">Una secuencia de los carácteres que el usuario puede pulsar.</param>
+    /// <returns>El carácter asociado a la tecla que el usuario ha pulsado.</returns>
     private static char PedirCaracter(
         string mensaje = "Introduce una letra: ",
         params char[] caracteresValidos)
     {
         char caracter;
 
-        Escribir(mensaje, false, ConsoleColor.White);
+        EscribirLinea(mensaje, false, ConsoleColor.White);
 
         do
             caracter = char.ToLower(Console.ReadKey().KeyChar);
@@ -211,6 +247,13 @@ internal sealed class Program
         return caracter;
     }
 
+    /// <summary>
+    /// Informa al usuario de que debe escribir un texto y lo devuelve si tiene una longitud válida.
+    /// </summary>
+    /// <param name="minLetras">La longitud mínima del texto a escribir, inclusivo.</param>
+    /// <param name="maxLetras">La longitud máxima del texto a escribir, inclusivo.</param>
+    /// <param name="mensaje">El mensaje a mostrar, usado para informar al usuario sobre qué debe introducir.</param>
+    /// <returns>El texto que el usuario ha escrito.</returns>
     private static string PedirTexto(
         int minLetras = 0,
         int maxLetras = int.MaxValue,
@@ -218,7 +261,7 @@ internal sealed class Program
     {
         string texto;
 
-        Escribir(mensaje, false, ConsoleColor.White);
+        EscribirLinea(mensaje, false, ConsoleColor.White);
 
         do
             texto = Console.ReadLine() ?? string.Empty;
@@ -227,6 +270,13 @@ internal sealed class Program
         return texto;
     }
 
+    /// <summary>
+    /// Informa al usuario de que debe escribir un número y lo devuelve si está dentro del rango.
+    /// </summary>
+    /// <param name="min">El número mínimo a introducir, inclusivo.</param>
+    /// <param name="max">El número máximo a introducir, inclusivo.</param>
+    /// <param name="mensaje">El mensaje a mostrar, usado para informar al usuario sobre qué debe introducir.</param>
+    /// <returns>El número que el usuario ha escrito.</returns>
     private static int PedirNumero(
         int min = int.MinValue,
         int max = int.MaxValue,
@@ -234,7 +284,7 @@ internal sealed class Program
     {
         int numero;
 
-        Escribir(mensaje, false, ConsoleColor.White);
+        EscribirLinea(mensaje, false, ConsoleColor.White);
 
         do
         {
@@ -250,6 +300,12 @@ internal sealed class Program
         return numero;
     }
 
+    /// <summary>
+    /// Muestra un <paramref name="mensaje"/> en la consola, sin terminar en una nueva línea.
+    /// </summary>
+    /// <param name="mensaje">El contenido del mensaje.</param>
+    /// <param name="esperarTecla">Determina si hace falta pulsar una tecla para continuar.</param>
+    /// <param name="color">El color usado para el contenido del mensaje.</param>
     private static void Escribir(
         string mensaje,
         bool esperarTecla = false,
@@ -263,6 +319,12 @@ internal sealed class Program
             Console.ReadKey(true);
     }
 
+    /// <summary>
+    /// Muestra un <paramref name="mensaje"/> en la consola, y pasa a la siguiente línea.
+    /// </summary>
+    /// <param name="mensaje">El contenido del mensaje.</param>
+    /// <param name="esperarTecla">Determina si hace falta pulsar una tecla para continuar.</param>
+    /// <param name="color">El color usado para el contenido del mensaje.</param>
     private static void EscribirLinea(
         string mensaje,
         bool esperarTecla = false,
